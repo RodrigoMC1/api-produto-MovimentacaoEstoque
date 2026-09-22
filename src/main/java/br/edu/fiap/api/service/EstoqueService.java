@@ -86,6 +86,10 @@ public class EstoqueService {
     @Transactional
     public MovimentacaoEstoque ajusteEstoque(Long estoqueId, int quantidadeNova, String motivo){
         Estoque estoque = buscar(estoqueId);
+        validarQuantidadeInicial(quantidadeNova);
+        if(quantidadeNova == estoque.getQuantidade())
+            throw new QuantidadeEstoqueInvalidaException("A quantidade nova é a mesma já existente");
+
         MovimentacaoEstoque movimentacaoEstoque;
         try {
             movimentacaoEstoque = new MovimentacaoEstoque(

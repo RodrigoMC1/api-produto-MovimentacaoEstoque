@@ -39,6 +39,13 @@ public class ApiExceptionHandler {
         return resposta(HttpStatus.NOT_FOUND, erro.getMessage());
     }
 
+    @ExceptionHandler(QuantidadeEstoqueInvalidaException.class)
+    ResponseEntity<Map<String, Object>> quantidadeEstoqueInvalido(QuantidadeEstoqueInvalidaException erro) {
+        return resposta(HttpStatus.BAD_REQUEST, erro.getMessage());
+    }
+
+
+
     /**
      * Converte falhas de Bean Validation em {@code 400 Bad Request}.
      *
