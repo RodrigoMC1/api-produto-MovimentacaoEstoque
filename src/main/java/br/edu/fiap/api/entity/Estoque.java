@@ -43,6 +43,13 @@ public class Estoque {
         this.quantidade -= quantidade;
     }
 
+    public void ajustar(int quantidade){
+        if(quantidade <= 0){
+            throw new IllegalArgumentException("A quantidade de consumo deve ser maior que zero");
+        }
+        this.quantidade = quantidade;
+    }
+
     public Long getId(){
         return id;
     }

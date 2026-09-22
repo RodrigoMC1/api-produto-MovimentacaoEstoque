@@ -1,25 +1,32 @@
 package br.edu.fiap.api.service;
 
 
+import br.edu.fiap.api.controller.dto.AjusteEstoqueRequest;
+import br.edu.fiap.api.controller.dto.MovimentacaoEstoqueResponse;
 import br.edu.fiap.api.entity.Estoque;
+import br.edu.fiap.api.entity.MovimentacaoEstoque;
 import br.edu.fiap.api.entity.Produto;
 import br.edu.fiap.api.exception.*;
 import br.edu.fiap.api.repository.EstoqueRepository;
+import br.edu.fiap.api.repository.MovimentacaoEstoqueRepository;
 import br.edu.fiap.api.repository.ProdutoRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class EstoqueService {
 
     private final EstoqueRepository estoqueRepository;
     private final ProdutoRepository produtoRepository;
+    private final MovimentacaoEstoqueRepository movimentacaoEstoqueRepository;
 
-    public EstoqueService(EstoqueRepository estoqueRepository, ProdutoRepository produtoRepository){
+    public EstoqueService(EstoqueRepository estoqueRepository, ProdutoRepository produtoRepository, MovimentacaoEstoqueRepository movimentacaoEstoqueRepository){
         this.estoqueRepository = estoqueRepository;
         this.produtoRepository = produtoRepository;
+        this.movimentacaoEstoqueRepository = movimentacaoEstoqueRepository;
     }
 
     public List<Estoque> listar(){
@@ -61,7 +68,7 @@ public class EstoqueService {
     @Transactional
     public Estoque repor(Long id, int quantidade){
         Estoque estoque = buscar(id);
-        try{
+        try {
             estoque.repor(quantidade);
         }catch(IllegalArgumentException err){
             throw new QuantidadeEstoqueInvalidaException(err.getMessage());
@@ -70,10 +77,34 @@ public class EstoqueService {
         return estoqueRepository.save(estoque);
     }
 
-
     public void validarQuantidadeInicial(int quantidade){
         if(quantidade < 0){
             throw new QuantidadeEstoqueInvalidaException("A quantidade inicial de estoque não pode ser negativa");
         }
     }
+
+    @Transactional
+    public MovimentacaoEstoque ajusteEstoque(Long estoqueId, int quantidadeNova, String motivo){
+        Estoque estoque = buscar(estoqueId);
+        MovimentacaoEstoque movimentacaoEstoque;
+        try {
+            movimentacaoEstoque = new MovimentacaoEstoque(
+                    estoque,
+                    estoque.getQuantidade(),
+                    quantidadeNova,
+                    motivo
+            );
+            estoque.ajustar(quantidadeNova);
+        }catch (IllegalArgumentException err){
+            throw new QuantidadeEstoqueInvalidaException(err.getMessage());
+        }
+
+        return movimentacaoEstoqueRepository.save(movimentacaoEstoque);
+    }
+
+    public List<MovimentacaoEstoque> buscarMovimentacose(Long id){
+        return movimentacaoEstoqueRepository.findByEstoqueId(id);
+    }
+
+
 }

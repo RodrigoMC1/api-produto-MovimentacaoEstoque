@@ -1,8 +1,6 @@
 package br.edu.fiap.api.controller;
 
-import br.edu.fiap.api.controller.dto.ConsumoEstoqueRequest;
-import br.edu.fiap.api.controller.dto.EstoqueRequest;
-import br.edu.fiap.api.controller.dto.EstoqueResponse;
+import br.edu.fiap.api.controller.dto.*;
 import br.edu.fiap.api.entity.Estoque;
 import br.edu.fiap.api.service.EstoqueService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -91,4 +89,27 @@ public class EstoqueController {
             @Valid @RequestBody ConsumoEstoqueRequest request) {
         return EstoqueResponse.de(service.repor(id, request.quantidade()));
     }
+
+    @PatchMapping("/{id}/ajustar")
+    @Operation(summary = "Ajsutar unidades no estoque")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Reposição ajustada"),
+            @ApiResponse(responseCode = "400", description = "Quantidade inválida"),
+            @ApiResponse(responseCode = "404", description = "Estoque não encontrado")
+    })
+    public MovimentacaoEstoqueResponse ajsutar(
+            @Parameter(example = "1") @PathVariable Long id,
+            @Valid @RequestBody AjusteEstoqueRequest request) {
+        return MovimentacaoEstoqueResponse.de(service.ajusteEstoque(id, request.quantidade(),request.motivo()));
+    }
+
+    @GetMapping("/{id}/movimentacoes")
+    @Operation(summary = "Buscar movimentacoes por ID")
+    public List<MovimentacaoEstoqueResponse> buscarMovimentacose(@Parameter(example = "1") @PathVariable Long id) {
+        return service.buscarMovimentacose(id)
+                        .stream()
+                        .map(MovimentacaoEstoqueResponse::de)
+                        .toList();
+    }
+
 }
